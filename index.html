@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Audio Questionnaire</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            background-color: #77A1D3;
+            margin: 0;
+            padding: 0;
+        }
+        #question-container {
+            margin-top: 20px;
+        }
+        .hidden {
+            display: none;
+        }
+        .scale-button {
+            font-size: 24px;
+            padding: 20px 40px;
+            margin: 10px;
+            cursor: pointer;
+        }
+        .selected {
+            background-color: lightblue;
+            transition: background-color 1s;
+        }
+        #repeat-button, #start-button, #download-results-button {
+            font-size: 20px;
+            padding: 15px 30px;
+            margin-top: 20px;
+        }
+        #container {
+            display: inline-block;
+            margin-top: 10px;
+        }
+        #robot {
+            width: 1px;
+            height: 1px;
+            position: relative;
+            margin: 0 auto;
+        }
+        #hat_lid {
+            position: absolute;
+            border-bottom: 5px solid #48312e;
+            border-left: 5px solid transparent;
+            border-right: 5px solid transparent;
+            height: 0;
+            width: 40%;
+            left: 30%;
+            top: -5%;
+        }
+        #hat_light {
+            position: absolute;
+            border-bottom: 20px solid #cf1f1b;
+            border-left: 5px solid transparent;
+            border-right: 5px solid transparent;
+            height: 0;
+            width: 20%;
+            left: 40%;
+            top: -25%;
+        }
+        #hat_glare {
+            position: absolute;
+            width: 5px;
+            height: 15px;
+            top: -20%;
+            left: 45%;
+            transform: skew(-14deg);
+            background: white;
+        }
+        #robot_head {
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(to bottom, #edfffb 0%, #69b0b2 50%, #2a7d8b 100%);
+            border-radius: 11%;
+            position: relative;
+            text-align: center;
+            padding: 6%;
+            box-sizing: border-box;
+        }
+        #robot_head::before {
+            border-radius: 12%;
+            content: '';
+            background-image: linear-gradient(to bottom, #bed9d0 0%, #93b3b7 50%, #1f3741 100%);
+            padding: 3%;
+            width: 100%;
+            height: 100%;
+            top: -3%;
+            left: -3%;
+            position: absolute;
+            z-index: -1;
+        }
+        #robot_ear_left {
+            position: absolute;
+            width: 15px;
+            height: 50px;
+            background-color: red;
+            background: linear-gradient(to bottom, #e15150 0%, #cf1f1b 10%, #cf1f1b 30%, #48312e 80%);
+            left: -20px;
+            top: 35%;
+            z-index: -2;
+            border-top-left-radius: 10px;
+            border-bottom-left-radius: 10px;
+        }
+        #robot_ear_right {
+            position: absolute;
+            width: 15px;
+            height: 50px;
+            background-color: red;
+            background: linear-gradient(to bottom, #e15150 0%, #cf1f1b 10%, #cf1f1b 30%, #48312e 80%);
+            right: -20px;
+            top: 35%;
+            z-index: -2;
+            border-top-right-radius: 10px;
+            border-bottom-right-radius: 10px;
+        }
+        #robot_nose {
+            position: absolute;
+            top: 40%;
+            left: calc(50% - 7.5px);
+            width: 0;
+            height: 0;
+            border-left: 7.5px solid transparent;
+            border-right: 7.5px solid transparent;
+            border-bottom: 20px solid #cf1f1b;
+        }
+        #robot_eye_left, #robot_eye_right {
+            position: absolute;
+            width: 30px;
+            height: 30px;
+            background: white;
+            border-radius: 50%;
+            top: 25%;
+        }
+        #robot_eye_left {
+            left: 20%;
+        }
+        #robot_eye_right {
+            right: 20%;
+        }
+        #robot_mouth {
+            position: absolute;
+            width: 60%;
+            height: 15%;
+            border-radius: 500px;
+            background-color: white;
+            left: 20%;
+            top: 68%;
+            border: 2px solid black;
+            overflow: hidden;
+        }
+        .container {
+            display: flex;
+            justify-content: space-between;
+            position: relative;
+            width: 100%;
+            height: 100%;
+        }
+        .bar {
+            height: 180px;
+            width: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            position: relative;
+            background: radial-gradient(white, rgba(255, 255, 255, 0) 80%, rgba(255, 255, 255, 0));
+            transition: 0.05s ease-in-out;
+        }
+        .talking .bar {
+            animation-name: moveIt;
+            animation-duration: 1.33s;
+            animation-direction: both;
+            animation-iteration-count: infinite;
+            background: radial-gradient(black, rgba(0, 0, 0, 0) 80%, rgba(0, 0, 0, 0));
+        }
+        .bar:nth-of-type(5n+1) { animation-delay: 0.25s; }
+        .bar:nth-of-type(5n+2) { animation-delay: 0.5s; }
+        .bar:nth-of-type(5n+3) { animation-delay: 0.75s; }
+        .bar:nth-of-type(5n+4) { animation-delay: 1s; }
+        .bar:nth-of-type(5n+5) { animation-delay: 1.25s; }
+        @keyframes moveIt {
+            0% { height: 0; }
+            25% { height: 18px; }
+            50% { height: 30px; }
+            70% { height: 8px; }
+            80% { height: 22px; }
+            100% { height: 0; }
+        }
+    </style>
+</head>
+<body>
+    <h1>Questionnaire</h1>
+    <button id="start-button" onclick="startQuestionnaire()">Start</button>
+    <div id="question-container" class="hidden">
+        <div id="container">
+            <div id="robot" hidden>
+                <div id="robot_head">
+                    <div id="hat_lid"></div>
+                    <div id="hat_light"></div>
+                    <div id="hat_glare"></div>
+                    <div id="robot_ear_left"></div>
+                    <div id="robot_ear_right"></div>
+                    <div id="robot_nose"></div>
+                    <div id="robot_eyes">
+                        <div id="robot_eye_left"></div>
+                        <div id="robot_eye_right"></div>
+                    </div>
+                    <div id="robot_mouth">
+                        <div class="container">
+                            <div class="bar"></div>
+                            <div class="bar"></div>
+                            <div class="bar"></div>
+                            <div class="bar"></div>
+                            <div class="bar"></div>
+                            <div class="bar"></div>
+                            <div class="bar"></div>
+                            <div class="bar"></div>
+                            <div class="bar"></div>
+                            <div class="bar"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <button id="repeat-button">Repeat</button>
+        <br><br>
+        <div id="scale">
+            <button class="scale-button" id="btn1" onclick="recordAnswer(1)">1</button>
+            <button class="scale-button" id="btn2" onclick="recordAnswer(2)">2</button>
+            <button class="scale-button" id="btn3" onclick="recordAnswer(3)">3</button>
+            <button class="scale-button" id="btn4" onclick="recordAnswer(4)">4</button>
+            <button class="scale-button" id="btn5" onclick="recordAnswer(5)">5</button>
+        </div>
+    </div>
+    <h2 id="h2-results" class="hidden">Questionnaire Completed!</h2>
+    <button id="download-results-button" class="hidden" onclick="downloadResults()">Download Results</button>
+    <audio id="question-audio" class="hidden">
+        <source id="audio-source" src="1.mp3" type="audio/mpeg">
+        Your browser does not support the audio element.
+    </audio>
+    <script>
+        let currentQuestion = 1;
+        const totalQuestions = 6;
+        const answers = [];
+
+        function startQuestionnaire() {
+            document.getElementById('start-button').classList.add('hidden');
+            document.getElementById('question-container').classList.remove('hidden');
+            loadQuestion(currentQuestion);
+        }
+
+        function recordAnswer(answer) {
+            answers.push({ question: currentQuestion, answer: answer });
+            highlightSelectedButton(answer);
+            if (currentQuestion < totalQuestions) {
+                currentQuestion++;
+                setTimeout(() => {
+                    loadQuestion(currentQuestion);
+                }, 1500); // 1.5 seconds to show the selected highlight
+            } else {
+                loadQuestion('7');
+                endSession();
+            }
+        }
+
+        function highlightSelectedButton(answer) {
+            for (let i = 1; i <= 5; i++) {
+                document.getElementById('btn' + i).classList.remove('selected');
+            }
+            const selectedButton = document.getElementById('btn' + answer);
+            selectedButton.classList.add('selected');
+            setTimeout(() => {
+                selectedButton.classList.remove('selected');
+            }, 1500); // 1.5 seconds
+        }
+
+        function loadQuestion(questionNumber) {
+            const audioSource = document.getElementById('audio-source');
+            audioSource.src = questionNumber + '.mp3';
+            const audioElement = document.getElementById('question-audio');
+            audioElement.load();
+            audioElement.play();
+            document.getElementById('robot_mouth').classList.add('talking');
+            audioElement.onended = () => {
+                document.getElementById('robot_mouth').classList.remove('talking');
+            };
+        }
+
+        document.getElementById('repeat-button').addEventListener('click', () => {
+            const audioElement = document.getElementById('question-audio');
+            audioElement.play();
+            document.getElementById('robot_mouth').classList.add('talking');
+            audioElement.onended = () => {
+                document.getElementById('robot_mouth').classList.remove('talking');
+            };
+        });
+
+        function endSession() {
+            document.getElementById('scale').classList.add('hidden');
+            document.getElementById('download-results-button').classList.remove('hidden');
+            document.getElementById('h2-results').classList.remove('hidden');
+        }
+
+        function downloadResults() {
+            const data = new Blob([JSON.stringify(answers)], { type: 'application/json' });
+            const url = window.URL.createObjectURL(data);
+            const a = document.createElement('a');
+            a.style.display = 'none';
+            a.href = url;
+            a.download = 'results.json';
+            document.body.appendChild(a);
+            a.click();
+            window.URL.revokeObjectURL(url);
+        }
+
+        window.onload = function() {
+            loadQuestion(currentQuestion);
+        }
+    </script>
+</body>
+</html>
